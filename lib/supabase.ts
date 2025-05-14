@@ -11,10 +11,15 @@ const supabaseOptions = {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
-    storage: Platform.OS === 'web' 
-      ? localStorage 
-      : AsyncStorage,
+    storage: Platform.select({
+      web: localStorage,
+      default: AsyncStorage,
+    }),
   },
 };
 
-export const supabase = createClient(supabaseUrl!, supabaseAnonKey!, supabaseOptions);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);

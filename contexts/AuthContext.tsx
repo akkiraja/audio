@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 type AuthContextType = {
   session: Session | null;
