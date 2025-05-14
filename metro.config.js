@@ -12,4 +12,25 @@ config.resolver.enableSymlinks = true;
 // Add additional watchFolders if needed
 config.watchFolders = [...(config.watchFolders || []), '.'];
 
+// Configure caching
+config.cacheStores = [];
+config.resetCache = true;
+
+// Configure error handling
+config.reporter = {
+  ...config.reporter,
+  update: () => {},
+};
+
+// Configure source map handling
+config.transformer = {
+  ...config.transformer,
+  minifierConfig: {
+    ...config.transformer.minifierConfig,
+    sourceMap: {
+      includeSources: true,
+    },
+  },
+};
+
 module.exports = config;
