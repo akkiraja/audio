@@ -2,9 +2,22 @@ import { Tabs } from 'expo-router';
 import { Mic, Users, MessageCircle, User } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts/AuthContext';
+import { Redirect } from 'expo-router';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { session, isLoading } = useAuth();
+
+  // Handle loading state
+  if (isLoading) {
+    return null;
+  }
+
+  // If no session, redirect to auth
+  if (!session) {
+    return <Redirect href="/auth" />;
+  }
 
   return (
     <Tabs
