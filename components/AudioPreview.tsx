@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Play, RotateCcw, Send } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -16,48 +16,34 @@ interface AudioPreviewProps {
 }
 
 const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
-  const isMounted = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const progress = useSharedValue(0);
 
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%`,
+  }));
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
-    
-    if (isPlaying && isMounted.current) {
+    let interval: NodeJS.Timeout;
+    if (isPlaying) {
       interval = setInterval(() => {
-        if (isMounted.current) {
-          setCurrentTime(prev => {
-            if (prev >= duration) {
-              if (isMounted.current) {
-                setIsPlaying(false);
-              }
-              return 0;
-            }
-            const next = prev + 1;
-            progress.value = withTiming(next / duration, {
-              duration: 1000,
-              easing: Easing.linear,
-            });
-            return next;
+        setCurrentTime((prev) => {
+          if (prev >= duration) {
+            setIsPlaying(false);
+            return 0;
+          }
+          const next = prev + 1;
+          progress.value = withTiming(next / duration, {
+            duration: 1000,
+            easing: Easing.linear,
           });
-        }
+          return next;
+        });
       }, 1000);
     }
-    
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [isPlaying, duration, progress]);
+    return () => clearInterval(interval);
+  }, [isPlaying, duration]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -66,8 +52,6 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
   };
 
   const handlePlayPause = () => {
-    if (!isMounted.current) return;
-    
     if (currentTime >= duration) {
       setCurrentTime(0);
       progress.value = 0;
@@ -76,13 +60,8 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
   };
 
   const handleSend = () => {
-    if (!isMounted.current) return;
     router.push('/send');
   };
-
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progress.value * 100}%`,
-  }));
 
   return (
     <View style={styles.container}>

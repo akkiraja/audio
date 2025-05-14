@@ -4,14 +4,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts } from 'expo-font';
 import { SplashScreen } from 'expo-router';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { View, Text } from 'react-native';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // Ensure framework is ready before rendering
   useFrameworkReady();
 
   const [fontsLoaded, fontError] = useFonts({
@@ -27,35 +24,18 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  // Show loading state while fonts are loading
   if (!fontsLoaded && !fontError) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2A0845' }}>
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: '500' }}>Loading...</Text>
-      </View>
-    );
-  }
-
-  // Show error state if there's a font error
-  if (fontError) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2A0845' }}>
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: '500' }}>Error loading app</Text>
-      </View>
-    );
+    return null;
   }
 
   return (
-    <AuthProvider>
-      <View style={{ flex: 1, backgroundColor: '#2A0845' }}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="send" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="light" />
-      </View>
-    </AuthProvider>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="send" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="light" />
+    </>
   );
 }
