@@ -16,29 +16,29 @@ interface AudioPreviewProps {
 }
 
 const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
+  const isMounted = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const progress = useSharedValue(0);
-  const isMounted = useRef(true);
-  const isInitialized = useRef(false);
 
   useEffect(() => {
-    isInitialized.current = true;
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
-      isInitialized.current = false;
     };
   }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
     
-    if (isPlaying && isInitialized.current) {
+    if (isPlaying && isMounted.current) {
       interval = setInterval(() => {
         if (isMounted.current) {
-          setCurrentTime((prev) => {
+          setCurrentTime(prev => {
             if (prev >= duration) {
-              setIsPlaying(false);
+              if (isMounted.current) {
+                setIsPlaying(false);
+              }
               return 0;
             }
             const next = prev + 1;
@@ -66,6 +66,8 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
   };
 
   const handlePlayPause = () => {
+    if (!isMounted.current) return;
+    
     if (currentTime >= duration) {
       setCurrentTime(0);
       progress.value = 0;
@@ -74,9 +76,8 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
   };
 
   const handleSend = () => {
-    if (isMounted.current) {
-      router.push('/send');
-    }
+    if (!isMounted.current) return;
+    router.push('/send');
   };
 
   const progressStyle = useAnimatedStyle(() => ({
