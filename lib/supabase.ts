@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
+// Use SecureStore only on native platforms
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
     return SecureStore.getItemAsync(key);
@@ -15,16 +16,26 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
+// Use localStorage for web, SecureStore for native
 const storage = Platform.OS === 'web' 
-  ? undefined 
+  ? {
+      getItem: (key: string) => {
+        const value = localStorage.getItem(key);
+        return Promise.resolve(value);
+      },
+      setItem: (key: string, value: string) => {
+        localStorage.setItem(key, value);
+        return Promise.resolve();
+      },
+      removeItem: (key: string) => {
+        localStorage.removeItem(key);
+        return Promise.resolve();
+      },
+    }
   : ExpoSecureStoreAdapter;
 
-// Log environment variables for debugging
-console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
-console.log('Supabase Anon Key:', process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 5) + '...');
-
 if (!process.env.EXPO_PUBLIC_SUPABASE_URL || !process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing Supabase environment variables');
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
 export const supabase = createClient(

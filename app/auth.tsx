@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Pressable, Image, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
@@ -10,35 +10,46 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp, isLoading } = useAuth();
 
   const handleAuth = async () => {
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
     try {
       setError('');
+      setIsSubmitting(true);
+      
       if (isLogin) {
         await signIn(email, password);
       } else {
         await signUp(email, password);
       }
+      
       router.replace('/(tabs)');
     } catch (err: any) {
       setError(err.message || 'An error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   if (isLoading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: 'white', fontSize: 18 }}>Loading...</Text>
-      </View>
+      <LinearGradient colors={['#2A0845', '#6441A5']} style={styles.gradient}>
+        <View style={[styles.container, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color="#FFFFFF" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#2A0845', '#6441A5']}
-      style={styles.gradient}
-    >
+    <LinearGradient colors={['#2A0845', '#6441A5']} style={styles.gradient}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
@@ -64,6 +75,7 @@ export default function AuthScreen() {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
+              editable={!isSubmitting}
             />
           </View>
 
@@ -76,19 +88,31 @@ export default function AuthScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              editable={!isSubmitting}
             />
           </View>
 
-          <Pressable style={styles.button} onPress={handleAuth}>
-            <Text style={styles.buttonText}>
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </Text>
-            <ArrowRight size={20} color="white" />
+          <Pressable 
+            style={[styles.button, isSubmitting && styles.buttonDisabled]} 
+            onPress={handleAuth}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Text style={styles.buttonText}>
+                  {isLogin ? 'Sign In' : 'Create Account'}
+                </Text>
+                <ArrowRight size={20} color="white" />
+              </>
+            )}
           </Pressable>
 
           <Pressable
             onPress={() => setIsLogin(!isLogin)}
             style={styles.switchButton}
+            disabled={isSubmitting}
           >
             <Text style={styles.switchText}>
               {isLogin
@@ -109,6 +133,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    fontSize: 16,
+    marginTop: 16,
+    fontFamily: 'Inter-Regular',
   },
   header: {
     alignItems: 'center',
@@ -171,6 +205,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
     color: 'white',
