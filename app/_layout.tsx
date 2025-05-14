@@ -1,17 +1,13 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts } from 'expo-font';
 import { SplashScreen } from 'expo-router';
 import { AuthProvider } from '@/contexts/AuthContext';
 
-// Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  useFrameworkReady();
-
   const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': require('@expo-google-fonts/inter/Inter_400Regular.ttf'),
     'Inter-Medium': require('@expo-google-fonts/inter/Inter_500Medium.ttf'),
@@ -35,7 +31,6 @@ export default function RootLayout() {
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="send" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="light" />
     </AuthProvider>
