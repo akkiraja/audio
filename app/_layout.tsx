@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts } from 'expo-font';
 import { SplashScreen } from 'expo-router';
-import { AuthProvider } from '@/contexts/auth';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -30,13 +29,12 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
+    <>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="light" />
-    </AuthProvider>
+    </>
   );
 }

@@ -1,45 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
-import { useAuth } from '@/contexts/auth';
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const { login, register } = useAuth();
-
-  const handleAuth = async () => {
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    if (!isLogin && password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const result = isLogin 
-      ? await login(email, password)
-      : await register(email, password);
-
-    setLoading(false);
-
-    if (result.success) {
-      router.replace('/(tabs)');
-    } else {
-      setError(result.error || 'Authentication failed');
-    }
+  const handleAuth = () => {
+    // In a real app, you would handle authentication here
+    // For now, we'll just navigate to the dashboard
+    router.replace('/(tabs)');
   };
 
   return (
@@ -58,10 +31,6 @@ export default function AuthScreen() {
         </View>
 
         <View style={styles.formContainer}>
-          {error && (
-            <Text style={styles.errorText}>{error}</Text>
-          )}
-
           <View style={styles.inputContainer}>
             <Mail size={20} color="rgba(255, 255, 255, 0.7)" />
             <TextInput
@@ -94,29 +63,26 @@ export default function AuthScreen() {
                 style={styles.input}
                 placeholder="Confirm Password"
                 placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
                 secureTextEntry
               />
             </View>
           )}
 
-          <Pressable 
-            style={[styles.button, loading && styles.buttonDisabled]} 
-            onPress={handleAuth}
-            disabled={loading}
-          >
+          {isLogin && (
+            <Link href="/forgot-password" style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </Link>
+          )}
+
+          <Pressable style={styles.button} onPress={handleAuth}>
             <Text style={styles.buttonText}>
-              {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+              {isLogin ? 'Sign In' : 'Create Account'}
             </Text>
             <ArrowRight size={20} color="white" />
           </Pressable>
 
           <Pressable
-            onPress={() => {
-              setIsLogin(!isLogin);
-              setError(null);
-            }}
+            onPress={() => setIsLogin(!isLogin)}
             style={styles.switchButton}
           >
             <Text style={styles.switchText}>
@@ -169,13 +135,6 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '100%',
   },
-  errorText: {
-    color: '#FF4444',
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,6 +151,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-Regular',
   },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 24,
+  },
+  forgotPasswordText: {
+    color: '#8A2BE2',
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+  },
   button: {
     backgroundColor: '#8A2BE2',
     borderRadius: 12,
@@ -200,15 +168,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-    gap: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
+    marginRight: 8,
   },
   switchButton: {
     alignItems: 'center',
