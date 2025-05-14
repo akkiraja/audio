@@ -20,21 +20,20 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const progress = useSharedValue(0);
   const isMounted = useRef(true);
-
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progress.value * 100}%`,
-  }));
+  const isInitialized = useRef(false);
 
   useEffect(() => {
+    isInitialized.current = true;
     return () => {
       isMounted.current = false;
+      isInitialized.current = false;
     };
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | undefined;
     
-    if (isPlaying) {
+    if (isPlaying && isInitialized.current) {
       interval = setInterval(() => {
         if (isMounted.current) {
           setCurrentTime((prev) => {
@@ -58,7 +57,7 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
         clearInterval(interval);
       }
     };
-  }, [isPlaying, duration]);
+  }, [isPlaying, duration, progress]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -75,8 +74,14 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
   };
 
   const handleSend = () => {
-    router.push('/send');
+    if (isMounted.current) {
+      router.push('/send');
+    }
   };
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%`,
+  }));
 
   return (
     <View style={styles.container}>
