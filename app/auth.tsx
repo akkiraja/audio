@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { signIn, signUp } = useAuth();
 
-  const handleAuth = () => {
-    // In a real app, you would handle authentication here
-    // For now, we'll just navigate to the dashboard
-    router.replace('/(tabs)');
+  const handleAuth = async () => {
+    try {
+      setError('');
+      if (isLogin) {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password);
+      }
+      router.replace('/(tabs)');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -31,6 +42,10 @@ export default function AuthScreen() {
         </View>
 
         <View style={styles.formContainer}>
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
+
           <View style={styles.inputContainer}>
             <Mail size={20} color="rgba(255, 255, 255, 0.7)" />
             <TextInput
@@ -55,24 +70,6 @@ export default function AuthScreen() {
               secureTextEntry
             />
           </View>
-
-          {!isLogin && (
-            <View style={styles.inputContainer}>
-              <Lock size={20} color="rgba(255, 255, 255, 0.7)" />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm Password"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                secureTextEntry
-              />
-            </View>
-          )}
-
-          {isLogin && (
-            <Link href="/forgot-password" style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </Link>
-          )}
 
           <Pressable style={styles.button} onPress={handleAuth}>
             <Text style={styles.buttonText}>
@@ -135,6 +132,13 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '100%',
   },
+  errorText: {
+    color: '#FF4444',
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,15 +154,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: '#8A2BE2',
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
   },
   button: {
     backgroundColor: '#8A2BE2',
