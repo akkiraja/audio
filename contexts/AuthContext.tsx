@@ -14,12 +14,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-      setIsLoading(false);
+      if (isMounted) {
+        setUser(user);
+        setIsLoading(false);
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return (
