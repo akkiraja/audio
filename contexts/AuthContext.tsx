@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { router } from 'expo-router';
 
 type AuthContextType = {
   session: Session | null;
@@ -23,21 +22,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     });
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      
-      if (session) {
-        // Check if user has a name set
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('name')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!profile?.name) {
-          router.replace('/onboarding');
-        }
-      }
     });
   }, []);
 
