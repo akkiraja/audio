@@ -1,40 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Pressable, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router } from 'expo-router';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const { signIn, signUp } = useAuth();
 
-  const handleAuth = async () => {
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    setError('');
-    setIsLoading(true);
-
-    try {
-      if (isLogin) {
-        await signIn(email, password);
-      } else {
-        await signUp(email, password);
-      }
-      router.replace('/(tabs)');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAuth = () => {
+    // In a real app, you would handle authentication here
+    // For now, we'll just navigate to the dashboard
+    router.replace('/(tabs)');
   };
 
   return (
@@ -53,12 +31,6 @@ export default function AuthScreen() {
         </View>
 
         <View style={styles.formContainer}>
-          {error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-
           <View style={styles.inputContainer}>
             <Mail size={20} color="rgba(255, 255, 255, 0.7)" />
             <TextInput
@@ -69,7 +41,6 @@ export default function AuthScreen() {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              editable={!isLoading}
             />
           </View>
 
@@ -82,9 +53,20 @@ export default function AuthScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              editable={!isLoading}
             />
           </View>
+
+          {!isLogin && (
+            <View style={styles.inputContainer}>
+              <Lock size={20} color="rgba(255, 255, 255, 0.7)" />
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                secureTextEntry
+              />
+            </View>
+          )}
 
           {isLogin && (
             <Link href="/forgot-password" style={styles.forgotPassword}>
@@ -92,30 +74,16 @@ export default function AuthScreen() {
             </Link>
           )}
 
-          <Pressable 
-            style={[styles.button, isLoading && styles.buttonDisabled]} 
-            onPress={handleAuth}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <>
-                <Text style={styles.buttonText}>
-                  {isLogin ? 'Sign In' : 'Create Account'}
-                </Text>
-                <ArrowRight size={20} color="white" />
-              </>
-            )}
+          <Pressable style={styles.button} onPress={handleAuth}>
+            <Text style={styles.buttonText}>
+              {isLogin ? 'Sign In' : 'Create Account'}
+            </Text>
+            <ArrowRight size={20} color="white" />
           </Pressable>
 
           <Pressable
-            onPress={() => {
-              setIsLogin(!isLogin);
-              setError('');
-            }}
+            onPress={() => setIsLogin(!isLogin)}
             style={styles.switchButton}
-            disabled={isLoading}
           >
             <Text style={styles.switchText}>
               {isLogin
@@ -167,18 +135,6 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '100%',
   },
-  errorContainer: {
-    backgroundColor: 'rgba(220, 38, 38, 0.1)',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    textAlign: 'center',
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -212,9 +168,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
   },
   buttonText: {
     color: 'white',
