@@ -10,7 +10,7 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, isLoading } = useAuth();
 
   const handleAuth = async () => {
     try {
@@ -21,10 +21,18 @@ export default function AuthScreen() {
         await signUp(email, password);
       }
       router.replace('/(tabs)');
-    } catch (err) {
-      setError(err.message);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
     }
   };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: 'white', fontSize: 18 }}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <LinearGradient
