@@ -3,7 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-// Secure storage implementation for Supabase auth state
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
     return SecureStore.getItemAsync(key);
@@ -16,21 +15,21 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
-// Use secure storage on native platforms, localStorage on web
 const storage = Platform.OS === 'web' 
   ? undefined 
   : ExpoSecureStoreAdapter;
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+// Log environment variables for debugging
+console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
+console.log('Supabase Anon Key:', process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 5) + '...');
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase configuration. Please check your environment variables.');
+if (!process.env.EXPO_PUBLIC_SUPABASE_URL || !process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
+  throw new Error('Missing Supabase environment variables');
 }
 
 export const supabase = createClient(
-  supabaseUrl!,
-  supabaseAnonKey!,
+  process.env.EXPO_PUBLIC_SUPABASE_URL,
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   {
     auth: {
       storage,
