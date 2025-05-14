@@ -21,16 +21,19 @@ const storage = Platform.OS === 'web'
   ? undefined 
   : ExpoSecureStoreAdapter;
 
-if (!process.env.EXPO_PUBLIC_SUPABASE_URL || !process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing Supabase configuration. Please check your environment variables.');
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase configuration. Please check your environment variables.');
 }
 
 export const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+  supabaseUrl!,
+  supabaseAnonKey!,
   {
     auth: {
-      storage: storage,
+      storage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
