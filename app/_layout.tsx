@@ -26,16 +26,26 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
+  // Show loading state while fonts are loading
   if (!fontsLoaded && !fontError) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2A0845' }}>
+        <Text style={{ color: 'white', fontSize: 18, fontWeight: '500' }}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Show error state if there's a font error
+  if (fontError) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2A0845' }}>
+        <Text style={{ color: 'white', fontSize: 18, fontWeight: '500' }}>Error loading app</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: '#2A0845' }}>
       <AuthProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="auth" options={{ headerShown: false }} />
