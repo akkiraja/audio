@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { Alert } from 'react-native';
+import { router } from 'expo-router';
 
 type AuthContextType = {
   session: Session | null;
@@ -18,45 +18,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Initialize auth state
     const initAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
-        setSession(session);
+        if (mounted) {
+          setSession(session);
+          if (session) {
+            router.replace('/(tabs)');
+          } else {
+            router.replace('/auth');
+          }
+        }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        Alert.alert('Error', 'Failed to initialize authentication');
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     initAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (mounted) {
+        setSession(session);
+        if (event === 'SIGNED_IN') {
+          router.replace('/(tabs)');
+        } else if (event === 'SIGNED_OUT') {
+          router.replace('/auth');
+        }
+      }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  const handleAuthError = (error: AuthError) => {
-    console.error('Auth error:', error);
-    
-    // Provide user-friendly error messages
+  const handleAuthError = (error: AuthError): never => {
+    let message = 'An error occurred during authentication';
+
     if (error.message.includes('Email not confirmed')) {
-      throw new Error('Please check your email to confirm your account');
+      message = 'Please check your email to confirm your account';
     } else if (error.message.includes('Invalid login credentials')) {
-      throw new Error('Invalid email or password');
+      message = 'Invalid email or password';
     } else if (error.message.includes('Email already registered')) {
-      throw new Error('This email is already registered');
-    } else {
-      throw new Error(error.message);
+      message = 'This email is already registered';
+    } else if (error.message.includes('Password should be')) {
+      message = 'Password must be at least 6 characters long';
+    } else if (error.message.includes('Invalid email')) {
+      message = 'Please enter a valid email address';
     }
+
+    throw new Error(message);
   };
 
   const signUp = async (email: string, password: string) => {
@@ -64,10 +85,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
       });
       if (error) handleAuthError(error);
     } catch (error) {
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
     }
   };
 
@@ -79,7 +106,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       if (error) handleAuthError(error);
     } catch (error) {
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
     }
   };
 
@@ -88,7 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut();
       if (error) handleAuthError(error);
     } catch (error) {
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
     }
   };
 
