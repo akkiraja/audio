@@ -1,0 +1,15 @@
+const { getDefaultConfig } = require('@expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+
+// Add additional configuration
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs', 'cjs'];
+config.resolver.assetExts = [...config.resolver.assetExts, 'db', 'sqlite'];
+
+// Ensure proper handling of symlinks
+config.resolver.enableSymlinks = true;
+
+// Add additional watchFolders if needed
+config.watchFolders = [...(config.watchFolders || []), '.'];
+
+module.exports = config;
