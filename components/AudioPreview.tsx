@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Play, RotateCcw, Send } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -19,30 +19,45 @@ const AudioPreview: React.FC<AudioPreviewProps> = ({ duration, onDiscard }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const progress = useSharedValue(0);
+  const isMounted = useRef(true);
 
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
   }));
 
   useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     let interval: NodeJS.Timeout;
+    
     if (isPlaying) {
       interval = setInterval(() => {
-        setCurrentTime((prev) => {
-          if (prev >= duration) {
-            setIsPlaying(false);
-            return 0;
-          }
-          const next = prev + 1;
-          progress.value = withTiming(next / duration, {
-            duration: 1000,
-            easing: Easing.linear,
+        if (isMounted.current) {
+          setCurrentTime((prev) => {
+            if (prev >= duration) {
+              setIsPlaying(false);
+              return 0;
+            }
+            const next = prev + 1;
+            progress.value = withTiming(next / duration, {
+              duration: 1000,
+              easing: Easing.linear,
+            });
+            return next;
           });
-          return next;
-        });
+        }
       }, 1000);
     }
-    return () => clearInterval(interval);
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [isPlaying, duration]);
 
   const formatTime = (seconds: number) => {
