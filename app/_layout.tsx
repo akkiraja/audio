@@ -11,6 +11,7 @@ import { View, Text } from 'react-native';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Ensure framework is ready before rendering
   useFrameworkReady();
 
   const [fontsLoaded, fontError] = useFonts({
@@ -45,8 +46,8 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#2A0845' }}>
-      <AuthProvider>
+    <AuthProvider>
+      <View style={{ flex: 1, backgroundColor: '#2A0845' }}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="auth" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -54,7 +55,7 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="light" />
-      </AuthProvider>
-    </View>
+      </View>
+    </AuthProvider>
   );
 }

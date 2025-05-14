@@ -6,16 +6,6 @@ const config = getDefaultConfig(__dirname);
 config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs', 'cjs'];
 config.resolver.assetExts = [...config.resolver.assetExts, 'db', 'sqlite'];
 
-// Configure caching
-config.cacheStores = [];
-config.resetCache = true;
-
-// Configure error handling
-config.reporter = {
-  ...config.reporter,
-  update: () => {},
-};
-
 // Configure source map handling
 config.transformer = {
   ...config.transformer,
