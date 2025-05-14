@@ -9,12 +9,10 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
 
-  // Handle loading state
   if (isLoading) {
     return null;
   }
 
-  // If no user, redirect to auth
   if (!user) {
     return <Redirect href="/auth" />;
   }
