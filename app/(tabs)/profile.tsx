@@ -5,15 +5,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Moon, Settings, LogOut, ChevronRight } from 'lucide-react-native';
 import { router } from 'expo-router';
 import Header from '@/components/Header';
+import { useAuth } from '@/contexts/auth';
 
 export default function ProfileScreen() {
   const [notifications, setNotifications] = React.useState(true);
   const [darkMode, setDarkMode] = React.useState(true);
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    // In a real app, you would handle logout here
-    // For now, we'll just navigate to the auth screen
-    router.replace('/auth');
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) {
+      router.replace('/auth');
+    }
   };
 
   return (
@@ -31,8 +34,8 @@ export default function ProfileScreen() {
               style={styles.profileImage}
             />
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Jake Wilson</Text>
-              <Text style={styles.profileUsername}>@jakewilson</Text>
+              <Text style={styles.profileName}>{user?.email?.split('@')[0] || 'User'}</Text>
+              <Text style={styles.profileUsername}>@{user?.email?.split('@')[0]?.toLowerCase() || 'user'}</Text>
             </View>
             <Pressable style={styles.editButton}>
               <Text style={styles.editButtonText}>Edit</Text>
